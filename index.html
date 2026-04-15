@@ -19,7 +19,7 @@ n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s);
+s.parentNode.insertBefore(t,s)
 }(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 
@@ -27,19 +27,19 @@ fbq('init', '799819532599997');
 fbq('track', 'PageView');
 </script>
 
-<!-- 🔥 PINTEREST PIXEL -->
+<!-- PINTEREST PIXEL -->
 <script>
 !function(e){
 if(!window.pintrk){
-window.pintrk=function(){window.pintrk.queue.push(Array.prototype.slice.call(arguments))};
+window.pintrk = function () {
+window.pintrk.queue.push(Array.prototype.slice.call(arguments))};
 var n=window.pintrk;
 n.queue=[],n.version="3.0";
 var t=document.createElement("script");
 t.async=!0,t.src=e;
 var r=document.getElementsByTagName("script")[0];
-r.parentNode.insertBefore(t,r);
-}}
-("https://s.pinimg.com/ct/core.js");
+r.parentNode.insertBefore(t,r)}
+}("https://s.pinimg.com/ct/core.js");
 
 pintrk('load', '2613965302610');
 pintrk('page');
@@ -58,7 +58,6 @@ body {
   align-items: center;
   font-family: Arial;
 }
-
 .botao {
   background: white;
   color: #E74B2E;
@@ -81,6 +80,21 @@ Abrir a Shopee
 
 <script>
 (function(){
+
+// ============================
+// 🔥 FUNÇÃO GLOBAL (META + PINTEREST)
+// ============================
+
+function trackAll(eventName, data = {}) {
+  // Meta
+  fbq('trackCustom', eventName, data);
+
+  // Pinterest
+  pintrk('track', 'custom', {
+    event_name: eventName,
+    ...data
+  });
+}
 
 // ============================
 // 🔥 PARÂMETROS
@@ -129,10 +143,10 @@ function tempoLoop(){
 
   if(tempo<=30){
     tempoLabel="S"+(tempo-1)+"a"+tempo;
-    fbq('trackCustom',"Tempo_"+tempoLabel);
+    trackAll("Tempo_"+tempoLabel);
   }else if(!disparouS30){
     tempoLabel="S30";
-    fbq('trackCustom',"Tempo_S30");
+    trackAll("Tempo_S30");
     disparouS30=true;
   }
 
@@ -157,12 +171,12 @@ setInterval(tempoLoop,1000);
 function checkEventos(){
 
   if(clickRight && tempoS0a1 && !evento02){
-    fbq('trackCustom','EVENTO02');
+    trackAll('EVENTO02');
     evento02=true;
   }
 
   if(clickRight && tempoS1a2 && !evento01){
-    fbq('trackCustom','EVENTO01');
+    trackAll('EVENTO01');
     evento01=true;
   }
 }
@@ -190,18 +204,12 @@ document.getElementById("btnShopee").addEventListener("click", function(e){
   else if (x > fimCentro) pos = "Right";
   else pos = "Center";
 
-  // ============================
-  // 📊 META
-  // ============================
+  // EVENTOS
+  trackAll('ClickShopee', { position: pos, uc: UC });
 
-  fbq('trackCustom', 'ClickShopee', {
-    position: pos,
-    uc: UC
-  });
-
-  if (pos === "Left") fbq('trackCustom', 'ClickShopee_Left');
-  else if (pos === "Center") fbq('trackCustom', 'ClickShopee_Center');
-  else fbq('trackCustom', 'ClickShopee_Right');
+  if (pos === "Left") trackAll('ClickShopee_Left');
+  else if (pos === "Center") trackAll('ClickShopee_Center');
+  else trackAll('ClickShopee_Right');
 
   if(pos === "Right"){
     clickRight = true;
@@ -209,30 +217,13 @@ document.getElementById("btnShopee").addEventListener("click", function(e){
   }
 
   fbq('track', 'InitiateCheckout');
+  pintrk('track', 'checkout');
 
   // ============================
-  // 📌 PINTEREST
+  // 🔥 UC COM TEMPO
   // ============================
 
   let tempoFinal = tempoLabel || "S0";
-
-  // evento padrão
-  pintrk('track', 'checkout', {
-    value: 0,
-    currency: 'BRL'
-  });
-
-  // evento custom
-  pintrk('track', 'custom', {
-    event_name: 'ClickShopee',
-    position: pos,
-    uc: UC,
-    tempo: tempoFinal
-  });
-
-  // ============================
-  // 🔥 UC FINAL
-  // ============================
 
   let finalUC = (UC + tempoFinal)
     .replace(/[^a-zA-Z0-9]/g,"");
