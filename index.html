@@ -82,18 +82,15 @@ Abrir a Shopee
 (function(){
 
 // ============================
-// 🔥 FUNÇÃO GLOBAL (META + PINTEREST)
+// 🔥 TRACK GLOBAL (META + PINTEREST)
 // ============================
 
 function trackAll(eventName, data = {}) {
   // Meta
   fbq('trackCustom', eventName, data);
 
-  // Pinterest
-  pintrk('track', 'custom', {
-    event_name: eventName,
-    ...data
-  });
+  // Pinterest com nome real do evento
+  pintrk('track', eventName, data);
 }
 
 // ============================
@@ -216,6 +213,7 @@ document.getElementById("btnShopee").addEventListener("click", function(e){
     checkEventos();
   }
 
+  // Eventos padrão
   fbq('track', 'InitiateCheckout');
   pintrk('track', 'checkout');
 
