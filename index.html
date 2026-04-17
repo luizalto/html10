@@ -1,8 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="pt-br">
 <head>
 
 <!-- META PIXEL -->
+
 <script>
 !function(f,b,e,v,n,t,s){
 if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -18,6 +20,7 @@ fbq('track', 'PageView');
 </script>
 
 <!-- PINTEREST PIXEL -->
+
 <script>
 !function(e){
 if(!window.pintrk){
@@ -77,7 +80,24 @@ function gerarId(tamanho = 15) {
   return result;
 }
 
-// ================= PERSISTENCIA =================
+// ================= PARAMETROS =================
+const params = new URLSearchParams(window.location.search);
+
+// ================= CLICK ID REAL =================
+const epik = params.get("epik");
+const fbclid = params.get("fbclid");
+
+// persistência do click_id
+if(epik){
+  localStorage.setItem('click_id', epik);
+}
+if(fbclid){
+  localStorage.setItem('click_id', fbclid);
+}
+
+let savedClickId = localStorage.getItem('click_id');
+
+// ================= USER ID =================
 let storedId = localStorage.getItem('user_id');
 
 if (!storedId) {
@@ -85,12 +105,13 @@ if (!storedId) {
   localStorage.setItem('user_id', storedId);
 }
 
-// ================= TRACK GLOBAL =================
+// ================= GLOBAL IDS =================
 let GLOBAL_IDS = {
   external_id: storedId,
-  click_id: storedId
+  click_id: epik || fbclid || savedClickId || storedId
 };
 
+// ================= TRACK =================
 function track(e,d={}) {
 
   const finalData = {
@@ -105,29 +126,27 @@ function track(e,d={}) {
   }
 }
 
-// ================= PARAMETROS =================
-const params=new URLSearchParams(window.location.search)
+// ================= LINK =================
+let LINK=null,UC=null;
 
-let LINK=null,UC=null
-
-const raw=params.get("dest")
+const raw=params.get("dest");
 
 if(raw && raw.includes("|||")){
-  const p=raw.split("|||")
-  LINK=p[0]
-  UC=p[1]
+  const p=raw.split("|||");
+  LINK=p[0];
+  UC=p[1];
 }else{
-  LINK=params.get("dest")
-  UC=params.get("uc")
+  LINK=params.get("dest");
+  UC=params.get("uc");
 }
 
 if(!LINK||!UC){
-  alert("Erro parâmetros")
-  throw new Error()
+  alert("Erro parâmetros");
+  throw new Error();
 }
 
 // ================= TEMPO =================
-let tempo=0,tempoLabel="S0"
+let tempo=0,tempoLabel="S0";
 
 let tempoS0a1=false;
 let tempoS1a2=false;
@@ -152,13 +171,13 @@ function checkEventos(){
 }
 
 const tempoInterval=setInterval(()=>{
-  tempo++
+  tempo++;
 
   if(tempo<=30){
-    tempoLabel="S"+(tempo-1)+"a"+tempo
-    track("Tempo_"+tempoLabel)
+    tempoLabel="S"+(tempo-1)+"a"+tempo;
+    track("Tempo_"+tempoLabel);
   }else{
-    clearInterval(tempoInterval)
+    clearInterval(tempoInterval);
   }
 
   if(tempoLabel==="S0a1"){
@@ -171,123 +190,120 @@ const tempoInterval=setInterval(()=>{
     checkEventos();
   }
 
-},1000)
-
-// ================= CLASSIFICAR =================
-function classificar(mbps){
-  if(mbps <= 0.5) return 1
-  if(mbps <= 0.8) return 2
-  if(mbps <= 1) return 3
-  if(mbps <= 2) return 4
-  if(mbps <= 4) return 5
-  if(mbps <= 6) return 6
-  if(mbps <= 10) return 7
-  if(mbps <= 15) return 8
-  if(mbps <= 20) return 9
-  if(mbps <= 30) return 11
-  if(mbps <= 40) return 12
-  if(mbps <= 50) return 13
-  if(mbps <= 60) return 14
-  return 15
-}
+},1000);
 
 // ================= VELOCIDADE =================
-let velocidade=null
+function classificar(mbps){
+  if(mbps <= 0.5) return 1;
+  if(mbps <= 0.8) return 2;
+  if(mbps <= 1) return 3;
+  if(mbps <= 2) return 4;
+  if(mbps <= 4) return 5;
+  if(mbps <= 6) return 6;
+  if(mbps <= 10) return 7;
+  if(mbps <= 15) return 8;
+  if(mbps <= 20) return 9;
+  if(mbps <= 30) return 11;
+  if(mbps <= 40) return 12;
+  if(mbps <= 50) return 13;
+  if(mbps <= 60) return 14;
+  return 15;
+}
+
+let velocidade=null;
 
 async function medirVelocidade(){
   try{
-    const controller=new AbortController()
-    setTimeout(()=>controller.abort(),1000)
+    const controller=new AbortController();
+    setTimeout(()=>controller.abort(),2000);
 
-    let totalBytes=0
-    const start=performance.now()
+    let totalBytes=0;
+    const start=performance.now();
 
     const res=await fetch("https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js",{
       signal:controller.signal,
       cache:"no-store"
-    })
+    });
 
-    const reader=res.body.getReader()
+    const reader=res.body.getReader();
 
     while(true){
-      const {done,value}=await reader.read()
-      if(done)break
-      totalBytes+=value.length
+      const {done,value}=await reader.read();
+      if(done)break;
+      totalBytes+=value.length;
     }
 
-    const duration=(performance.now()-start)/1000
+    const duration=(performance.now()-start)/1000;
 
     if(totalBytes>0){
-      velocidade=(totalBytes*8/duration)/(1024*1024)
+      velocidade=(totalBytes*8/duration)/(1024*1024);
 
-      const nivel=classificar(velocidade)
+      const nivel=classificar(velocidade);
 
-      track("Velocidade_N"+nivel)
-      track("VelocidadeInternet",{mbps:velocidade.toFixed(2),nivel})
+      track("Velocidade_N"+nivel);
+      track("VelocidadeInternet",{mbps:velocidade.toFixed(2),nivel});
     }
 
   }catch(e){
-    track("Velocidade_Erro")
+    track("Velocidade_Erro");
   }
 }
 
-medirVelocidade()
+medirVelocidade();
 
 // ================= CLIQUE =================
 document.getElementById("btnShopee").addEventListener("click",function(e){
 
-  const btn=this
-  btn.innerText="Redirecionando..."
+  const btn=this;
+  btn.innerText="Redirecionando...";
 
-  const rect=btn.getBoundingClientRect()
-  const x=e.clientX - rect.left
-  const largura=rect.width
+  const rect=btn.getBoundingClientRect();
+  const x=e.clientX - rect.left;
+  const largura=rect.width;
 
-  let pos
+  let pos;
 
-  const inicioCentro=largura*0.45
-  const fimCentro=largura*0.55
+  const inicioCentro=largura*0.45;
+  const fimCentro=largura*0.55;
 
   if(x < inicioCentro){
-    pos="Left"
+    pos="Left";
   }else if(x > fimCentro){
-    pos="Right"
+    pos="Right";
   }else{
-    pos="Center"
+    pos="Center";
   }
 
-  // EVENTOS PIXEL
-  track('ClickShopee',{ position:pos, uc: UC })
+  track('ClickShopee',{ position:pos, uc: UC });
 
   if(pos==="Left"){
-    track('ClickShopee_Left',{ uc: UC })
+    track('ClickShopee_Left',{ uc: UC });
   }else if(pos==="Center"){
-    track('ClickShopee_Center',{ uc: UC })
+    track('ClickShopee_Center',{ uc: UC });
   }else{
-    track('ClickShopee_Right',{ uc: UC })
+    track('ClickShopee_Right',{ uc: UC });
     clickRight = true;
     checkEventos();
   }
 
-  // EVENTOS DE CONVERSÃO
   fbq('track', 'InitiateCheckout');
 
   if (typeof pintrk !== "undefined") {
     pintrk('track', 'checkout', { ...GLOBAL_IDS, uc: UC });
   }
 
-  const tempoClick=tempoLabel
+  const tempoClick=tempoLabel;
 
-  let tag
+  let tag;
   if(velocidade){
-    tag="N"+classificar(velocidade)
+    tag="N"+classificar(velocidade);
   }else{
-    tag="N5"
+    tag="N5";
   }
 
-  const lado = pos === "Left" ? "L" : pos === "Right" ? "R" : "C"
+  const lado = pos === "Left" ? "L" : pos === "Right" ? "R" : "C";
 
-  const baseUC = UC.replace(/[^a-zA-Z0-9]/g,"")
+  const baseUC = UC.replace(/[^a-zA-Z0-9]/g,"");
 
   const finalUC = (
     baseUC +
@@ -296,13 +312,13 @@ document.getElementById("btnShopee").addEventListener("click",function(e){
     tempoClick +
     tag +
     lado
-  ).replace(/[^a-zA-Z0-9]/g,"")
+  ).replace(/[^a-zA-Z0-9]/g,"");
 
-  const url=`https://shopee-utm-tracker.onrender.com/?link=${encodeURIComponent(LINK)}&uc=${finalUC}`
+  const url=`https://shopee-utm-tracker.onrender.com/?link=${encodeURIComponent(LINK)}&uc=${finalUC}`;
 
-  window.location.href=url
+  window.location.href=url;
 
-})
+});
 
 })();
 </script>
