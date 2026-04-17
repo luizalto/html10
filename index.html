@@ -13,9 +13,9 @@ if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
 n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)
-}(window, document,'script','');
+}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-fbq('init', '');
+fbq('init', '799819532599997');
 fbq('track', 'PageView');
 </script>
 
@@ -83,18 +83,30 @@ function gerarId(tamanho = 15) {
 // ================= PARAMETROS =================
 const params = new URLSearchParams(window.location.search);
 
-// ================= CLICK ID REAL =================
-const epik = params.get("epik");
-const fbclid = params.get("fbclid");
-
-// persistência do click_id
-if(epik){
-  localStorage.setItem('click_id', epik);
-}
-if(fbclid){
-  localStorage.setItem('click_id', fbclid);
+// ================= COOKIE =================
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
 }
 
+// ================= CAPTURA CLICK_ID =================
+const epikParam = params.get("epik");
+const fbclidParam = params.get("fbclid");
+const epikCookie = getCookie("_epik");
+
+// salvar click_id se vier da URL ou cookie
+if(epikParam){
+  localStorage.setItem('click_id', epikParam);
+}
+if(fbclidParam){
+  localStorage.setItem('click_id', fbclidParam);
+}
+if(epikCookie){
+  localStorage.setItem('click_id', epikCookie);
+}
+
+// recuperar salvo
 let savedClickId = localStorage.getItem('click_id');
 
 // ================= USER ID =================
@@ -108,7 +120,7 @@ if (!storedId) {
 // ================= GLOBAL IDS =================
 let GLOBAL_IDS = {
   external_id: storedId,
-  click_id: epik || fbclid || savedClickId || storedId
+  click_id: epikParam || fbclidParam || epikCookie || savedClickId || storedId
 };
 
 // ================= TRACK =================
