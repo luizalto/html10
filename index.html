@@ -2,9 +2,7 @@
 <html lang="pt-br">
 <head>
 
-<!-- =====================================================
-     PINTEREST PIXEL
-===================================================== -->
+<!-- PINTEREST PIXEL -->
 <script>
 !function(e){
 if(!window.pintrk){
@@ -18,7 +16,6 @@ var r=document.getElementsByTagName("script")[0];
 r.parentNode.insertBefore(t,r)}
 }("https://s.pinimg.com/ct/core.js");
 
-// ---- USER ID ----
 function gerarId(){
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   let id = ''
@@ -32,16 +29,13 @@ function getUserId(){
 }
 const userId = getUserId()
 
-// ---- SALVAR epik da URL se presente ----
 const _initParams = new URLSearchParams(window.location.search)
 const _epikUrl    = _initParams.get('epik')
 if(_epikUrl) localStorage.setItem('click_id', _epikUrl)
 
-// ---- INIT PIXEL ----
 pintrk('load', '2613965302610', { external_id: userId })
 pintrk('page')
 
-// ---- HELPER DE EVENTOS ----
 function enviarEvento(valor){
   if(!valor) return
   const nome = valor.replace(/[^a-zA-Z0-9]/g, "")
@@ -67,10 +61,7 @@ const ENABLE_PARIDADE = (() => {
   return true
 })()
 
-// =========================================================
-// GOOGLE SHEETS — URL DA NOVA PLANILHA PINTEREST
-// =========================================================
-const SHEETS_URL = "https://script.google.com/macros/s/AKfycbzjbXptIAL8F4xWr5g7dKzpqP1ju7IFIVbqR3VH2Iq6HFegtzVd9XAm54aBmIiRiyWW/exec"
+const SHEETS_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT"
 
 function timeout(promise, ms, fallback){
   return Promise.race([promise, new Promise(res => setTimeout(() => res(fallback), ms))])
@@ -87,42 +78,6 @@ if(raw && raw.includes("|||")){
   LINK = params.get("dest"); UC = params.get("uc")
 }
 if(!LINK || !UC) throw new Error("Parametros invalidos")
-
-// =========================================================
-// PLACEMENT + SOURCE
-// =========================================================
-const plRaw  = (params.get("pl")  || "").toLowerCase().trim()
-const srcRaw = (params.get("src") || "").toLowerCase().trim()
-
-function classPlacement(p){
-  if(!p || p.includes("{{")) return "PU"
-  const n = p.replace(/[_\s-]/g, "")
-  if(n.includes("profilereels"))  return "PP"
-  if(n.includes("reelsoverlay"))  return "PV"
-  if(n.includes("reels"))         return "PR"
-  if(n.includes("stories"))       return "PS"
-  if(n.includes("explorehome"))   return "PH"
-  if(n.includes("explore"))       return "PE"
-  if(n.includes("search"))        return "PQ"
-  if(n.includes("marketplace"))   return "PM"
-  if(n.includes("instream"))      return "PI"
-  if(n.includes("video"))         return "PI"
-  if(n.includes("messenger"))     return "PG"
-  if(n.includes("audience"))      return "PA"
-  if(n.includes("feed"))          return "PF"
-  return "PO"
-}
-function classSrc(s){
-  if(!s || s.includes("{{")) return "SU"
-  if(s === "ig")  return "SI"
-  if(s === "fb")  return "SF"
-  if(s === "msg") return "SM"
-  if(s === "an")  return "SA"
-  if(s === "pt")  return "SP"   // Pinterest
-  return "SU"
-}
-const placementTag = classPlacement(plRaw)
-const sourceTag    = classSrc(srcRaw)
 
 // =========================================================
 // GEOLOCALIZAÇÃO MULTI-FONTE + CACHE
@@ -191,9 +146,9 @@ async function medirGeo() {
 // HORA
 // =========================================================
 const HP_PADRAO = 20
-const hp = HP_PADRAO
-const baseUC   = UC.replace(/[^a-zA-Z0-9]/g, "").slice(0, 16)
-const tempoTag = "T1"
+const hp        = HP_PADRAO
+const baseUC    = UC.replace(/[^a-zA-Z0-9]/g, "").slice(0, 16)
+const tempoTag  = "T1"
 
 // =========================================================
 // VELOCIDADE
@@ -263,9 +218,9 @@ function medirWebRTC(){
         if(enc) return; enc = true; try{pc.close()}catch{}
         let tag = "RU"
         for(const ip of [...ips]){
-          if(/^10\./.test(ip))                           { tag="RC"; break }
-          if(/^172\.(1[6-9]|2\d|3[01])\./.test(ip))     { tag="RV"; break }
-          if(/^192\.168\./.test(ip))                       tag="RH"
+          if(/^10\./.test(ip))                         { tag="RC"; break }
+          if(/^172\.(1[6-9]|2\d|3[01])\./.test(ip))   { tag="RV"; break }
+          if(/^192\.168\./.test(ip))                     tag="RH"
         }
         resolve(tag)
       }
@@ -296,7 +251,7 @@ const vib     = navigator.vibrate ? "V1" : "V0"
 const conexao = (() => {
   const c = navigator.connection
   if(!c) return "U"
-  if(c.type==="wifi") return "W"
+  if(c.type==="wifi")     return "W"
   if(c.type==="cellular") return "M"
   return "U"
 })()
@@ -319,11 +274,11 @@ const cityTag  = geo.city
 // =========================================================
 // COOKIES PINTEREST
 // =========================================================
-const epikCookieVal = getCookie("_epik")          // cookie click Pinterest
-const pctCookieVal  = getCookie("_pinterest_ct")  // cookie sessão Pinterest
+const epikCookieVal = getCookie("_epik")
+const pctCookieVal  = getCookie("_pinterest_ct")
 const epikUrlVal    = params.get("epik") || localStorage.getItem('click_id') || ""
 
-const EPIK_FLAG = epikCookieVal !== "" ? 1 : (epikUrlVal !== "" ? 1 : 0)
+const EPIK_FLAG = (epikCookieVal !== "" || epikUrlVal !== "") ? 1 : 0
 const PCT_FLAG  = pctCookieVal  !== "" ? 1 : 0
 
 // =========================================================
@@ -368,12 +323,11 @@ if(hp===1){
 const browserTag = /EX(?=ID)/i.test(UC) ? "EX" : /IX(?=ID)/i.test(UC) ? "IX" : "Outros"
 
 // =========================================================
-// EVENTOS PINTEREST — dispara sinais individuais
+// EVENTOS PINTEREST
 // =========================================================
 const eventosBasicos = [
   tempoTag, velTag, batObj.bateria, batObj.carregando,
   tema, ram, vib, device, conexao, movimento, redeTag,
-  placementTag, sourceTag,
   stateTag, cityTag,
   minDezena, minUnidade, segMetade, horaPar,
   diaSemana, diaPar, periodo,
@@ -399,8 +353,6 @@ const RUNTIME = {
   Conexao    : conexao,
   Movimento  : movimento,
   Rede       : redeTag,
-  Placement  : placementTag,
-  Source     : sourceTag,
   Browser    : browserTag,
   Hora       : horaTag,
   State      : stateTag,
@@ -461,8 +413,6 @@ const corpoParts = [
   conexao,
   movimento,
   redeTag,
-  placementTag,
-  sourceTag,
   stateTag,
   cityTag
 ]
@@ -478,11 +428,9 @@ const finalUC     = corpoFinal + topTag + idTag
 // =========================================================
 if(DEBUG){
   alert(
-    "=== DEBUG UC Pinterest ===\n" +
+    "=== DEBUG UC Pinterest v2 ===\n" +
     "stateTag:    [" + stateTag      + "] (" + geo.state_full + ")\n" +
     "cityTag:     [" + cityTag       + "] (" + geo.city_full  + ")\n" +
-    "placement:   [" + placementTag  + "]\n" +
-    "source:      [" + sourceTag     + "]\n" +
     "horaTag:     [" + horaTag       + "]\n" +
     "topTag:      [" + topTag        + "]\n" +
     "epik_url:    [" + epikUrlVal    + "]\n" +
@@ -494,27 +442,22 @@ if(DEBUG){
 }
 
 // =========================================================
-// GOOGLE SHEETS — só o essencial para atribuição Pinterest
-// Colunas: data_hora | external_id | epik | epik_cookie |
-//          pinterest_ct | placement | source | device |
-//          velocidade | state | city | uc_completo
+// GOOGLE SHEETS
 // =========================================================
 try {
   const agora     = new Date()
   const data_hora = agora.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
   const payload   = {
     data_hora,
-    external_id   : userId,
-    epik          : epikUrlVal,          // click_id vindo da URL (?epik=)
-    epik_cookie   : epikCookieVal,       // _epik cookie (Pinterest seta automaticamente)
-    pinterest_ct  : pctCookieVal,        // _pinterest_ct cookie de sessão
-    placement     : placementTag,
-    source        : sourceTag,
+    external_id  : userId,
+    epik         : epikUrlVal,
+    epik_cookie  : epikCookieVal,
+    pinterest_ct : pctCookieVal,
     device,
-    velocidade    : velTag,
-    state         : stateTag,
-    city          : cityTag,
-    uc_completo   : finalUC
+    velocidade   : velTag,
+    state        : stateTag,
+    city         : cityTag,
+    uc_completo  : finalUC
   }
   fetch(SHEETS_URL, {
     method  : "POST",
